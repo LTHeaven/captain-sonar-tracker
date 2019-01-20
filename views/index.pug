@@ -1,0 +1,12 @@
+extends layout
+
+block content
+  div.container
+    div.row
+      div.col-md-6
+        div.mr-1.panel
+          h1= title
+          p Welcome to #{title}
+      div.col-md-6
+        div.ml-1
+          div(class='map-canvas', id='p5canvas')
