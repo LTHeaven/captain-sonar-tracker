@@ -6,12 +6,29 @@ block content
       div.col-lg-6.col-md-12
         div.mr-1
           div(class='map-canvas', id='p5canvas')
-      div.col-lg-6.col-md-12
-        div.ml-1.panel.p-4
+      div.col-lg-6.col-md-12.card
+        div.ml-1.p-4.card-body
           h1= title
           p Welcome to #{title}
-          button#northButton north
-          button#southButton south
-          button#westButton west
-          button#eastButton east
-          button#resetButton reset
+          div.container
+            div.row
+              div.col-4.wrapper
+                button.btn.btn-outline-secondary Undo
+              div.col-4.wrapper
+                button.btn.btn-outline-primary#northButton N
+              div.col-4.wrapper
+                button.btn.btn-outline-secondary#resetButton Reset
+            div.row
+              div.col-4.wrapper
+                button.btn.btn-outline-primary#westButton W
+              div.col-4.wrapper
+                button.btn.btn-outline-secondary#stealthButton Stealth
+              div.col-4.wrapper
+                button.btn.btn-outline-primary#eastButton E
+            div.row
+              div.col-4.wrapper
+                button.btn.btn-outline-secondary Sonar
+              div.col-4.wrapper
+                button.btn.btn-outline-primary#southButton S
+              div.col-4.wrapper
+                button.btn.btn-outline-secondary Drone
