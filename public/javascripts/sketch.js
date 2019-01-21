@@ -1,6 +1,12 @@
 var backgroundImage;
 var tilePossibleImage;
 
+var animationHandler = {
+    arrowTimeMs: 0
+};
+const arrowAnimationDelay = 10;
+
+
 var cellAmount = 15;
 var canvas;
 var mapSize;
@@ -58,7 +64,11 @@ function draw() {
             y: hoverPosition.y,
             moveStack: hoverPosition.moveStack.slice(0)
         };
-        drawArrowReursive(tempPosition);
+
+        let count = Math.trunc((new Date().getTime()-animationHandler.arrowTimeMs)/arrowAnimationDelay + 1);
+        let counter = Math.min(count, hoverPosition.moveStack.length);
+        console.log(counter);
+        drawArrowReursive(tempPosition, counter);
     }
 }
 
@@ -69,6 +79,7 @@ function mouseMoved() {
             var y = Math.trunc((mouseY-legendSize)/cellWidth);
             if(!(hoverPosition != null && hoverPosition.x == x && hoverPosition.y == y)){
                 hoverPosition = getPossible(x, y);
+                animationHandler.arrowTimeMs = new Date().getTime();
             }
         }
     }else{
@@ -166,8 +177,8 @@ function resetPossiblePositions(){
     }
 }
 
-function drawArrowReursive(tempPosition) {
-    if (tempPosition.moveStack.length > 0){
+function drawArrowReursive(tempPosition, counter) {
+    if (tempPosition.moveStack.length > 0 && counter > 0){
         var x = tempPosition.x;
         var y = tempPosition.y;
         var arrowDivider = 8;
@@ -196,6 +207,6 @@ function drawArrowReursive(tempPosition) {
             rect(tempPosition.x*cellWidth+legendSize, tempPosition.y*cellWidth+legendSize, cellWidth, cellWidth);
             stroke(0,0,0);
         }
-        drawArrowReursive(tempPosition);
+        drawArrowReursive(tempPosition, --counter);
     }
 }
