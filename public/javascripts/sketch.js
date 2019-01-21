@@ -19,6 +19,7 @@ var moveStack = [];
 var possiblePositions = [];
 
 var tilesJson;
+var hoverPosition = null;
 
 function initIslands() {
     $.getJSON("/javascripts/json/alpha.json", function (data) {
@@ -38,6 +39,7 @@ function setup() {
     tilePossibleImage = loadImage("images/tilePossible.png");
 }
 
+
 function draw() {
     if (drawCounter++ > 10){
         drawCounter = 0;
@@ -49,6 +51,29 @@ function draw() {
             var y = legendSize + cellWidth * position.y;
             image(tilePossibleImage, x, y, cellWidth, cellWidth);
     });
+    //hoverPositionRendering
+    if (hoverPosition != null) {
+        var tempPosition = {
+            x: hoverPosition.x,
+            y: hoverPosition.y,
+            moveStack: hoverPosition.moveStack.slice(0)
+        };
+        drawArrowReursive(tempPosition);
+    }
+}
+
+function mouseMoved() {
+    if (mouseX>=0 && mouseX <= mapSize && mouseY>=0 && mouseY <= mapSize){
+        if(mouseX > legendSize && mouseY > legendSize) {
+            var x = Math.trunc((mouseX-legendSize)/cellWidth);
+            var y = Math.trunc((mouseY-legendSize)/cellWidth);
+            if(!(hoverPosition != null && hoverPosition.x == x && hoverPosition.y == y)){
+                hoverPosition = getPossible(x, y);
+            }
+        }
+    }else{
+        hoverPosition = null;
+    }
 }
 
 function updateCanvas(noRedraw) {
@@ -69,6 +94,16 @@ function initButtons() {
     westButton.addEventListener("click",  evt => {if(tilesJson!=undefined){enemyMove(2)}});
     eastButton.addEventListener("click",  evt => {if(tilesJson!=undefined){enemyMove(3)}});
     resetButton.addEventListener("click",  evt => {if(tilesJson!=undefined){resetPossiblePositions()}});
+}
+
+function getPossible(x, y) {
+    var ret = null;
+    possiblePositions.forEach(function (position) {
+        if (position.x == x && position.y == y){
+            ret = position;
+        }
+    });
+    return ret;
 }
 
 function isIsland(x, y) {
@@ -101,10 +136,9 @@ function updatePossiblePositions(move) {
                 break;
         }
         if (!(y < 0 || y>=cellAmount || x < 0 || x>=cellAmount || isIsland(x, y))) {
-            var position = {
-                x: x,
-                y: y
-            };
+            position.x = x;
+            position.y = y;
+            position.moveStack.push(move);
             nextPossiblePositions.push(position);
         }
     });
@@ -123,10 +157,45 @@ function resetPossiblePositions(){
             if (!isIsland(i, j)){
                 var position = {
                     x: i,
-                    y: j
+                    y: j,
+                    moveStack: []
                 };
                 possiblePositions.push(position);
             }
         }
+    }
+}
+
+function drawArrowReursive(tempPosition) {
+    if (tempPosition.moveStack.length > 0){
+        var x = tempPosition.x;
+        var y = tempPosition.y;
+        var arrowDivider = 8;
+        noFill();
+        switch(tempPosition.moveStack.pop()) {
+            case 0:
+                tempPosition.y++;
+                triangle((cellWidth*x)+legendSize+cellWidth/2, (cellWidth*y)+legendSize+cellWidth/2, (cellWidth*x)+legendSize+cellWidth/2-cellWidth/arrowDivider, (cellWidth*(y+1))+legendSize+cellWidth/2, (cellWidth*x)+legendSize+cellWidth/2+cellWidth/arrowDivider, (cellWidth*(y+1))+legendSize+cellWidth/2)
+                break;
+            case 1:
+                tempPosition.y--;
+                triangle((cellWidth*x)+legendSize+cellWidth/2, (cellWidth*y)+legendSize+cellWidth/2, (cellWidth*x)+legendSize+cellWidth/2-cellWidth/arrowDivider, (cellWidth*(y-1))+legendSize+cellWidth/2, (cellWidth*x)+legendSize+cellWidth/2+cellWidth/arrowDivider, (cellWidth*(y-1))+legendSize+cellWidth/2)
+                break;
+            case 2:
+                tempPosition.x++;
+                triangle((cellWidth*x)+legendSize+cellWidth/2, (cellWidth*y)+legendSize+cellWidth/2, (cellWidth*(x+1))+legendSize+cellWidth/2, (cellWidth*y)+legendSize+cellWidth/2-cellWidth/arrowDivider, (cellWidth*(x+1))+legendSize+cellWidth/2, (cellWidth*y)+legendSize+cellWidth/2+cellWidth/arrowDivider);
+                break;
+            case 3:
+                tempPosition.x--;
+                triangle((cellWidth*x)+legendSize+cellWidth/2, (cellWidth*y)+legendSize+cellWidth/2, (cellWidth*(x-1))+legendSize+cellWidth/2, (cellWidth*y)+legendSize+cellWidth/2-cellWidth/arrowDivider, (cellWidth*(x-1))+legendSize+cellWidth/2, (cellWidth*y)+legendSize+cellWidth/2+cellWidth/arrowDivider);
+                break;
+        }
+        if (tempPosition.moveStack.length == 0){
+            noStroke();
+            fill(0, 10, 200, 50);
+            rect(tempPosition.x*cellWidth+legendSize, tempPosition.y*cellWidth+legendSize, cellWidth, cellWidth);
+            stroke(0,0,0);
+        }
+        drawArrowReursive(tempPosition);
     }
 }
