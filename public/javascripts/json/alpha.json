@@ -1,0 +1,129 @@
+[{
+  "x": 2,
+  "y": 1,
+  "island": true
+}, {
+  "x": 2,
+  "y": 2,
+  "island": true
+}, {
+  "x": 6,
+  "y": 1,
+  "island": true
+}, {
+  "x": 12,
+  "y": 1,
+  "island": true
+}, {
+  "x": 13,
+  "y": 1,
+  "island": true
+}, {
+  "x": 12,
+  "y": 2,
+  "island": true
+}, {
+  "x": 8,
+  "y": 2,
+  "island": true
+}, {
+  "x": 8,
+  "y": 3,
+  "island": true
+}, {
+  "x": 1,
+  "y": 6,
+  "island": true
+}, {
+  "x": 1,
+  "y": 7,
+  "island": true
+}, {
+  "x": 3,
+  "y": 6,
+  "island": true
+}, {
+  "x": 3,
+  "y": 7,
+  "island": true
+}, {
+  "x": 3,
+  "y": 8,
+  "island": true
+}, {
+  "x": 6,
+  "y": 6,
+  "island": true
+}, {
+  "x": 6,
+  "y": 7,
+  "island": true
+}, {
+  "x": 7,
+  "y": 8,
+  "island": true
+}, {
+  "x": 8,
+  "y": 6,
+  "island": true
+}, {
+  "x": 11,
+  "y": 8,
+  "island": true
+}, {
+  "x": 12,
+  "y": 8,
+  "island": true
+}, {
+  "x": 13,
+  "y": 8,
+  "island": true
+}, {
+  "x": 2,
+  "y": 11,
+  "island": true
+}, {
+  "x": 3,
+  "y": 10,
+  "island": true
+}, {
+  "x": 0,
+  "y": 12,
+  "island": true
+}, {
+  "x": 7,
+  "y": 11,
+  "island": true
+}, {
+  "x": 11,
+  "y": 11,
+  "island": true
+}, {
+  "x": 2,
+  "y": 13,
+  "island": true
+}, {
+  "x": 3,
+  "y": 14,
+  "island": true
+}, {
+  "x": 6,
+  "y": 13,
+  "island": true
+}, {
+  "x": 8,
+  "y": 13,
+  "island": true
+}, {
+  "x": 2,
+  "y": 1,
+  "island": true
+}, {
+  "x": 12,
+  "y": 12,
+  "island": true
+}, {
+  "x": 13,
+  "y": 13,
+  "island": true
+}]

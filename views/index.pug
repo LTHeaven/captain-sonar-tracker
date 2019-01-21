@@ -3,10 +3,15 @@ extends layout
 block content
   div.container
     div.row
-      div.col-md-6
-        div.mr-1.panel
+      div.col-lg-6.col-md-12
+        div.mr-1
+          div(class='map-canvas', id='p5canvas')
+      div.col-lg-6.col-md-12
+        div.ml-1.panel.p-4
           h1= title
           p Welcome to #{title}
-      div.col-md-6
-        div.ml-1
-          div(class='map-canvas', id='p5canvas')
+          button#northButton north
+          button#southButton south
+          button#westButton west
+          button#eastButton east
+          button#resetButton reset
