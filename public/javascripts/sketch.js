@@ -1,10 +1,17 @@
+var moveStringMap = {
+    0: "N",
+    1: "S",
+    2: "W",
+    3: "E"
+};
+
 var backgroundImage;
 var tilePossibleImage;
 
 var animationHandler = {
     arrowTimeMs: 0
 };
-const arrowAnimationDelay = 10;
+var arrowAnimationDelay = 10;
 
 var cellAmount = 15;
 var canvas;
@@ -23,7 +30,6 @@ var undoButton;
 
 var moveStack = [];
 var moveList;
-var possiblePositions = [];
 var possiblePositionsStack = [];
 
 var tilesJson;
@@ -55,7 +61,7 @@ function draw() {
         updateCanvas(false)
     }
     background(backgroundImage);
-    possiblePositions.forEach(function (position) {
+    getPossiblePositions().forEach(function (position) {
             var x = legendSize + cellWidth * position.x;
             var y = legendSize + cellWidth * position.y;
             image(tilePossibleImage, x, y, cellWidth, cellWidth);
@@ -68,8 +74,8 @@ function draw() {
             moveStack: hoverPosition.moveStack.slice(0)
         };
 
-        let count = Math.trunc((new Date().getTime()-animationHandler.arrowTimeMs)/arrowAnimationDelay + 1);
-        let counter = Math.min(count, hoverPosition.moveStack.length);
+        var count = Math.trunc((new Date().getTime()-animationHandler.arrowTimeMs)/arrowAnimationDelay + 1);
+        var counter = Math.min(count, hoverPosition.moveStack.length);
         drawArrowReursive(tempPosition, counter);
     }
 }
@@ -113,7 +119,7 @@ function initButtons() {
 
 function getPossible(x, y) {
     var ret = null;
-    possiblePositions.forEach(function (position) {
+    getPossiblePositions().forEach(function (position) {
         if (position.x == x && position.y == y){
             ret = position;
         }
@@ -133,7 +139,7 @@ function isIsland(x, y) {
 
 function updatePossiblePositions(move) {
     nextPossiblePositions = [];
-    possiblePositions.forEach(function (position) {
+    getPossiblePositions().forEach(function (position) {
         var x = position.x;
         var y = position.y;
         switch(move) {
@@ -151,14 +157,16 @@ function updatePossiblePositions(move) {
                 break;
         }
         if (!(y < 0 || y>=cellAmount || x < 0 || x>=cellAmount || isIsland(x, y))) {
-            position.x = x;
-            position.y = y;
-            position.moveStack.push(move);
-            nextPossiblePositions.push(position);
+            var newPosition = {
+                x: x,
+                y: y,
+                moveStack: position.moveStack.slice()
+            };
+            newPosition.moveStack.push(move);
+            nextPossiblePositions.push(newPosition);
         }
     });
-    possiblePositionsStack.push(possiblePositions);
-    possiblePositions = nextPossiblePositions;
+    possiblePositionsStack.push(nextPossiblePositions);
 }
 
 function enemyMove(direction) {
@@ -168,7 +176,7 @@ function enemyMove(direction) {
 }
 
 function undoLastMove() {
-    possiblePositions = possiblePositionsStack.pop();
+    possiblePositionsStack.pop();
     moveStack.pop();
     updateMoveList();
 }
@@ -176,7 +184,7 @@ function undoLastMove() {
 function updateMoveList(){
     if (moveList.children.length < moveStack.length) {
         var newLI = document.createElement('li');
-        newLI.innerHTML = 'A new item';
+        newLI.innerHTML = moveStringMap[moveStack[moveStack.length-1]];
         newLI.className = newLI.className + " list-group-item";
         moveList.insertBefore(newLI, moveList.getElementsByTagName('li')[0]);
         setTimeout(function() {
@@ -195,8 +203,8 @@ function updateMoveList(){
 
 function resetPossiblePositions(){
     possiblePositionsStack = [];
-    possiblePositions = [];
-    for (var i = 0; i<cellAmount; i++) {
+    var possiblePositions = [];
+    for (var i = 0; i < cellAmount; i++) {
         for (var j = 0; j < cellAmount; j++) {
             if (!isIsland(i, j)){
                 var position = {
@@ -208,6 +216,7 @@ function resetPossiblePositions(){
             }
         }
     }
+    possiblePositionsStack.push(possiblePositions);
     moveStack = [];
     updateMoveList();
 }
@@ -244,4 +253,11 @@ function drawArrowReursive(tempPosition, counter) {
         }
         drawArrowReursive(tempPosition, --counter);
     }
+}
+
+function getPossiblePositions() {
+    if (possiblePositionsStack.length == 0){
+        return [];
+    }
+    return possiblePositionsStack[possiblePositionsStack.length - 1];
 }
