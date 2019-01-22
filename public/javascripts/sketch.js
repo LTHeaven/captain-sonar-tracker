@@ -176,20 +176,22 @@ function enemyMove(direction) {
 }
 
 function undoLastMove() {
-    possiblePositionsStack.pop();
-    moveStack.pop();
-    updateMoveList();
+    if (possiblePositionsStack.length > 1){
+        possiblePositionsStack.pop();
+        moveStack.pop();
+        updateMoveList();
+    }
 }
 
 function updateMoveList(){
     if (moveList.children.length < moveStack.length) {
         var newLI = document.createElement('li');
         newLI.innerHTML = moveStringMap[moveStack[moveStack.length-1]];
-        newLI.className = newLI.className + " list-group-item";
+        newLI.className = newLI.className + " list-group-item list-group-item-primary";
         moveList.insertBefore(newLI, moveList.getElementsByTagName('li')[0]);
         setTimeout(function() {
             newLI.className = newLI.className + " show";
-        }, 40);
+        }, 10);
     } else if(moveList.children.length > moveStack.length) {
         moveList.firstChild.className = moveList.firstChild.className.replace(" show", "");
         setTimeout(function(){
@@ -197,7 +199,7 @@ function updateMoveList(){
             $($(moveList).children()[0]).remove();
             console.log(moveList);
             updateMoveList();
-        }, 40);
+        }, 10);
     }
 }
 
