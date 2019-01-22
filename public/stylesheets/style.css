@@ -23,4 +23,25 @@ button {
 .wrapper {
   padding: 5px !important; }
 
+.list-group {
+  max-height: 300px;
+  overflow-y: scroll; }
+
+.list-group::-webkit-scrollbar {
+  width: 0px;
+  background: transparent; }
+
+.list-group-item {
+  height: 0; }
+
+.show {
+  height: auto; }
+
+.slide-fade li {
+  transition: all 0.4s ease-out;
+  opacity: 0; }
+
+.slide-fade li.show {
+  opacity: 1; }
+
 /*# sourceMappingURL=style.css.map */

@@ -6,7 +6,6 @@ var animationHandler = {
 };
 const arrowAnimationDelay = 10;
 
-
 var cellAmount = 15;
 var canvas;
 var mapSize;
@@ -20,9 +19,12 @@ var southButton;
 var westButton;
 var eastButton;
 var resetButton;
+var undoButton;
 
 var moveStack = [];
+var moveList;
 var possiblePositions = [];
+var possiblePositionsStack = [];
 
 var tilesJson;
 var hoverPosition = null;
@@ -35,6 +37,7 @@ function initIslands() {
 }
 
 function setup() {
+    moveList = document.getElementById("moveList");
     initButtons();
     initIslands();
     canvas = createCanvas(1, 1);
@@ -67,7 +70,6 @@ function draw() {
 
         let count = Math.trunc((new Date().getTime()-animationHandler.arrowTimeMs)/arrowAnimationDelay + 1);
         let counter = Math.min(count, hoverPosition.moveStack.length);
-        console.log(counter);
         drawArrowReursive(tempPosition, counter);
     }
 }
@@ -100,11 +102,13 @@ function initButtons() {
     westButton = document.getElementById("westButton");
     eastButton = document.getElementById("eastButton");
     resetButton = document.getElementById("resetButton");
-    northButton.addEventListener("click", evt => {if(tilesJson!=undefined){enemyMove(0)}});
-    southButton.addEventListener("click", evt => {if(tilesJson!=undefined){enemyMove(1)}});
-    westButton.addEventListener("click",  evt => {if(tilesJson!=undefined){enemyMove(2)}});
-    eastButton.addEventListener("click",  evt => {if(tilesJson!=undefined){enemyMove(3)}});
-    resetButton.addEventListener("click",  evt => {if(tilesJson!=undefined){resetPossiblePositions()}});
+    undoButton = document.getElementById("undoButton");
+    northButton.addEventListener("click", function(){if(tilesJson!==undefined){enemyMove(0)}});
+    southButton.addEventListener("click", function(){if(tilesJson!==undefined){enemyMove(1)}});
+    westButton.addEventListener("click",  function(){if(tilesJson!==undefined){enemyMove(2)}});
+    eastButton.addEventListener("click",  function(){if(tilesJson!==undefined){enemyMove(3)}});
+    resetButton.addEventListener("click",  function(){if(tilesJson!==undefined){resetPossiblePositions()}});
+    undoButton.addEventListener("click",  function(){if(tilesJson!==undefined){undoLastMove()}});
 }
 
 function getPossible(x, y) {
@@ -153,15 +157,44 @@ function updatePossiblePositions(move) {
             nextPossiblePositions.push(position);
         }
     });
+    possiblePositionsStack.push(possiblePositions);
     possiblePositions = nextPossiblePositions;
 }
 
 function enemyMove(direction) {
     moveStack.push(direction);
     updatePossiblePositions(direction);
+    updateMoveList();
+}
+
+function undoLastMove() {
+    possiblePositions = possiblePositionsStack.pop();
+    moveStack.pop();
+    updateMoveList();
+}
+
+function updateMoveList(){
+    if (moveList.children.length < moveStack.length) {
+        var newLI = document.createElement('li');
+        newLI.innerHTML = 'A new item';
+        newLI.className = newLI.className + " list-group-item";
+        moveList.insertBefore(newLI, moveList.getElementsByTagName('li')[0]);
+        setTimeout(function() {
+            newLI.className = newLI.className + " show";
+        }, 40);
+    } else if(moveList.children.length > moveStack.length) {
+        moveList.firstChild.className = moveList.firstChild.className.replace(" show", "");
+        setTimeout(function(){
+            console.log(moveList);
+            $($(moveList).children()[0]).remove();
+            console.log(moveList);
+            updateMoveList();
+        }, 40);
+    }
 }
 
 function resetPossiblePositions(){
+    possiblePositionsStack = [];
     possiblePositions = [];
     for (var i = 0; i<cellAmount; i++) {
         for (var j = 0; j < cellAmount; j++) {
@@ -175,6 +208,8 @@ function resetPossiblePositions(){
             }
         }
     }
+    moveStack = [];
+    updateMoveList();
 }
 
 function drawArrowReursive(tempPosition, counter) {

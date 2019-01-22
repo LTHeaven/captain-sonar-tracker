@@ -9,26 +9,30 @@ block content
       div.col-lg-6.col-md-12.card
         div.ml-1.p-4.card-body
           h1= title
-          p Welcome to #{title}
           div.container
             div.row
-              div.col-4.wrapper
-                button.btn.btn-outline-secondary Undo
-              div.col-4.wrapper
-                button.btn.btn-outline-primary#northButton N
-              div.col-4.wrapper
-                button.btn.btn-outline-secondary#resetButton Reset
-            div.row
-              div.col-4.wrapper
-                button.btn.btn-outline-primary#westButton W
-              div.col-4.wrapper
-                button.btn.btn-outline-secondary#stealthButton Stealth
-              div.col-4.wrapper
-                button.btn.btn-outline-primary#eastButton E
-            div.row
-              div.col-4.wrapper
-                button.btn.btn-outline-secondary Sonar
-              div.col-4.wrapper
-                button.btn.btn-outline-primary#southButton S
-              div.col-4.wrapper
-                button.btn.btn-outline-secondary Drone
+              div.col-8
+                div.container
+                  div.row
+                    div.col-4.wrapper
+                      button.btn.btn-outline-secondary#undoButton Undo
+                    div.col-4.wrapper
+                      button.btn.btn-outline-primary#northButton N
+                    div.col-4.wrapper
+                      button.btn.btn-outline-secondary#resetButton Reset
+                  div.row
+                    div.col-4.wrapper
+                      button.btn.btn-outline-primary#westButton W
+                    div.col-4.wrapper
+                      button.btn.btn-outline-secondary#stealthButton Stealth
+                    div.col-4.wrapper
+                      button.btn.btn-outline-primary#eastButton E
+                  div.row
+                    div.col-4.wrapper
+                      button.btn.btn-outline-secondary Sonar
+                    div.col-4.wrapper
+                      button.btn.btn-outline-primary#southButton S
+                    div.col-4.wrapper
+                      button.btn.btn-outline-secondary Drone
+              div.col-4
+                ul.list-group.slide-fade#moveList
