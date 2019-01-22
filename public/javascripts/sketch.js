@@ -8,6 +8,7 @@ var moveStringMap = {
 var backgroundImage;
 var tilePossibleImage;
 var sectorDeselectedImage;
+var sectorSelectedImage;
 
 var animationHandler = {
     arrowTimeMs: 0
@@ -55,6 +56,7 @@ function setup() {
     background(backgroundImage);
     tilePossibleImage = loadImage("images/tilePossible.png");
     sectorDeselectedImage = loadImage("images/sectorDeselected.png");
+    sectorSelectedImage = loadImage("images/sectorSelected.png");
 }
 
 
@@ -84,8 +86,9 @@ function draw() {
     if (currentAppState == appStates.SONAR) {
         var sectorWidth = cellWidth*5;
         for (var i = 0; i < 9; i++){
+            console.log(mouseX);
             if (getSectorByPoint(mouseX, mouseY) == i){
-
+                image(sectorSelectedImage, legendSize + (i%3)*sectorWidth, legendSize + Math.trunc(i/3)*sectorWidth, sectorWidth, sectorWidth);
             }else{
                 image(sectorDeselectedImage, legendSize + (i%3)*sectorWidth, legendSize + Math.trunc(i/3)*sectorWidth, sectorWidth, sectorWidth);
             }
@@ -110,7 +113,10 @@ function mouseMoved() {
 }
 
 function getSectorByPoint(x, y){
-
+    if (x>legendSize && x < mapSize && y>legendSize && y < mapSize) {
+        return Math.trunc((x-legendSize)/(cellWidth*5)) + Math.trunc((y-legendSize)/(cellWidth*5))*3;
+    }
+    return null;
 }
 
 function updateCanvas(noRedraw) {
