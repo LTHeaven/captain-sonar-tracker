@@ -7,6 +7,7 @@ var moveStringMap = {
 
 var backgroundImage;
 var tilePossibleImage;
+var sectorDeselectedImage;
 
 var animationHandler = {
     arrowTimeMs: 0
@@ -21,12 +22,7 @@ var cellWidth;
 
 var drawCounter = 0;
 
-var northButton;
-var southButton;
-var westButton;
-var eastButton;
-var resetButton;
-var undoButton;
+var buttonHandler;
 
 var moveStack = [];
 var moveList;
@@ -34,6 +30,12 @@ var possiblePositionsStack = [];
 
 var tilesJson;
 var hoverPosition = null;
+
+var appStates = {
+    DEFAULT: 0,
+    SONAR: 1
+};
+var currentAppState = appStates.DEFAULT;
 
 function initIslands() {
     $.getJSON("/javascripts/json/alpha.json", function (data) {
@@ -52,6 +54,7 @@ function setup() {
     backgroundImage = loadImage("images/mapAlpha.png");
     background(backgroundImage);
     tilePossibleImage = loadImage("images/tilePossible.png");
+    sectorDeselectedImage = loadImage("images/sectorDeselected.png");
 }
 
 
@@ -78,6 +81,17 @@ function draw() {
         var counter = Math.min(count, hoverPosition.moveStack.length);
         drawArrowReursive(tempPosition, counter);
     }
+    if (currentAppState == appStates.SONAR) {
+        var sectorWidth = cellWidth*5;
+        for (var i = 0; i < 9; i++){
+            if (getSectorByPoint(mouseX, mouseY) == i){
+
+            }else{
+                image(sectorDeselectedImage, legendSize + (i%3)*sectorWidth, legendSize + Math.trunc(i/3)*sectorWidth, sectorWidth, sectorWidth);
+            }
+
+        }
+    }
 }
 
 function mouseMoved() {
@@ -95,6 +109,10 @@ function mouseMoved() {
     }
 }
 
+function getSectorByPoint(x, y){
+
+}
+
 function updateCanvas(noRedraw) {
     mapSize = document.getElementById("p5canvas").clientWidth;
     legendSize = mapSize*(30/455);
@@ -103,19 +121,43 @@ function updateCanvas(noRedraw) {
 }
 
 function initButtons() {
-    northButton = document.getElementById("northButton");
-    southButton = document.getElementById("southButton");
-    westButton = document.getElementById("westButton");
-    eastButton = document.getElementById("eastButton");
-    resetButton = document.getElementById("resetButton");
-    undoButton = document.getElementById("undoButton");
-    northButton.addEventListener("click", function(){if(tilesJson!==undefined){enemyMove(0)}});
-    southButton.addEventListener("click", function(){if(tilesJson!==undefined){enemyMove(1)}});
-    westButton.addEventListener("click",  function(){if(tilesJson!==undefined){enemyMove(2)}});
-    eastButton.addEventListener("click",  function(){if(tilesJson!==undefined){enemyMove(3)}});
-    resetButton.addEventListener("click",  function(){if(tilesJson!==undefined){resetPossiblePositions()}});
-    undoButton.addEventListener("click",  function(){if(tilesJson!==undefined){undoLastMove()}});
+    buttonHandler = {
+        buttons: {
+            northButton:    initButton("northButton",   function(){enemyMove(0)}),
+            southButton:    initButton("southButton",   function(){enemyMove(1)}),
+            westButton:     initButton("westButton",    function(){enemyMove(2)}),
+            eastButton:     initButton("eastButton",    function(){enemyMove(3)}),
+            resetButton:    initButton("resetButton",   function(){resetPossiblePositions()}),
+            undoButton:     initButton("undoButton",    function(){undoLastMove()}),
+            sonarButton:    initButton("sonarButton",   function(){sonar()}),
+            stealthButton:  initButton("stealthButton", function(){console.log("todo")}),
+            droneButton:    initButton("droneButton",   function(){console.log("todo")})
+        },
+        setAllButtonsEnabled: function (isEnabled) {
+            for (var key in this.buttons) {
+                if (!this.buttons.hasOwnProperty(key)) continue;
+                this.buttons[key].setEnabled(isEnabled);
+            }
+        }
+    };
+
+    function initButton(id, listenerFunction) {
+        var button = {
+            buttonElement: document.getElementById(id),
+            setEnabled: function (isEnabled) {
+                this.buttonElement.disabled = !isEnabled;
+            }
+        };
+        button.buttonElement.addEventListener("click", function(){if(tilesJson!==undefined)listenerFunction()});
+        return button;
+    }
 }
+
+function sonar() {
+    buttonHandler.setAllButtonsEnabled(false);
+    currentAppState = appStates.SONAR;
+}
+
 
 function getPossible(x, y) {
     var ret = null;
