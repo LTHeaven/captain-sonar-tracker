@@ -26,6 +26,7 @@ var cellWidth;
 var drawCounter = 0;
 
 var buttonHandler;
+var buttonContainer;
 
 var moveStack = [];
 var moveList;
@@ -40,6 +41,8 @@ var appStates = {
     DRONE: 2
 };
 var currentAppState = appStates.DEFAULT;
+
+var selectedSector;
 
 function initIslands() {
     $.getJSON("/javascripts/json/alpha.json", function (data) {
@@ -64,6 +67,7 @@ function setup() {
     initImages();
     initButtons();
     initIslands();
+    buttonContainer = document.getElementById("buttonContainer");
     moveList = document.getElementById("moveList");
     canvas = createCanvas(1, 1);
     updateCanvas(true);
@@ -79,7 +83,6 @@ function draw() {
     background(backgroundImage);
     if (currentAppState == appStates.DRONE) {
         for (var i = 0; i < 9; i++){
-            console.log(mouseX);
             if (getSectorByPoint(mouseX, mouseY) != i){
                 image(sectorGaussianBlurImages[i], legendSize + (i%3)*sectorSize, legendSize + Math.trunc(i/3)*sectorSize, sectorSize, sectorSize);
             }
@@ -104,6 +107,14 @@ function draw() {
     }
 }
 
+function mouseClicked() {
+    if (currentAppState == appStates.DRONE) {
+        var sectorByPoint = getSectorByPoint(mouseX, mouseY);
+        selectedSector = sectorByPoint;
+        showDroneConfirm(sectorByPoint != null);
+    }
+}
+
 function mouseMoved() {
     if (mouseX>=0 && mouseX <= mapSize && mouseY>=0 && mouseY <= mapSize){
         if(mouseX > legendSize && mouseY > legendSize) {
@@ -117,6 +128,11 @@ function mouseMoved() {
     }else{
         hoverPosition = null;
     }
+}
+
+function showDroneConfirm(show) {
+    buttonContainer.hidden = show;
+    confirmDroneContainer.hidden = !show;
 }
 
 function getSectorByPoint(x, y){
@@ -137,16 +153,18 @@ function updateCanvas(noRedraw) {
 function initButtons() {
     buttonHandler = {
         buttons: {
-            northButton:    initButton("northButton",   function(){enemyMove(0)}),
-            southButton:    initButton("southButton",   function(){enemyMove(1)}),
-            westButton:     initButton("westButton",    function(){enemyMove(2)}),
-            eastButton:     initButton("eastButton",    function(){enemyMove(3)}),
-            resetButton:    initButton("resetButton",   function(){resetPossiblePositions()}),
-            undoButton:     initButton("undoButton",    function(){undoLastMove()}),
-            sonarButton:    initButton("sonarButton",   function(){sonar()}),
-            stealthButton:  initButton("stealthButton", function(){console.log("todo")}),
-            droneButton:    initButton("droneButton",   function(){drone()})
+            northButton:    initButton("northButton",       function(){enemyMove(0)}),
+            southButton:    initButton("southButton",       function(){enemyMove(1)}),
+            westButton:     initButton("westButton",        function(){enemyMove(2)}),
+            eastButton:     initButton("eastButton",        function(){enemyMove(3)}),
+            resetButton:    initButton("resetButton",       function(){resetPossiblePositions()}),
+            undoButton:     initButton("undoButton",        function(){undoLastMove()}),
+            sonarButton:    initButton("sonarButton",       function(){sonar()}),
+            stealthButton:  initButton("stealthButton",     function(){console.log("todo")}),
+            droneButton:    initButton("droneButton",       function(){drone()})
         },
+        droneSuccessButton: initButton("droneSuccessButton",function(){droneApply(true)}),
+        droneFailButton:    initButton("droneFailButton",   function(){droneApply(false)}),
         setAllButtonsEnabled: function (isEnabled) {
             for (var key in this.buttons) {
                 if (!this.buttons.hasOwnProperty(key)) continue;
@@ -175,6 +193,13 @@ function sonar() {
 function drone() {
     buttonHandler.setAllButtonsEnabled(false);
     currentAppState = appStates.DRONE;
+}
+
+function droneApply(success) {
+    showDroneConfirm(false);
+    buttonHandler.setAllButtonsEnabled(true);
+    //TODO: drone move calculation
+    currentAppState = appStates.DEFAULT;
 }
 
 
@@ -256,9 +281,7 @@ function updateMoveList(){
     } else if(moveList.children.length > moveStack.length) {
         moveList.firstChild.className = moveList.firstChild.className.replace(" show", "");
         setTimeout(function(){
-            console.log(moveList);
             $($(moveList).children()[0]).remove();
-            console.log(moveList);
             updateMoveList();
         }, 10);
     }

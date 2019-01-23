@@ -8,11 +8,19 @@ block content
           div(class='map-canvas', id='p5canvas')
       div.col-lg-6.col-md-12.card
         div.ml-1.p-4.card-body
-          h1= title
+          //h1= title
           div.container
             div.row
               div.col-9
-                div.container
+                div#confirmDroneContainer(hidden="true")
+                  div.container
+                    h4 Was the Drone successfull?
+                    div.row
+                      div.col-6.wrapper
+                        button.btn.btn-success#droneSuccessButton Yes
+                      div.col-6.wrapper
+                        button.btn.btn-danger#droneFailButton No
+                div.container#buttonContainer
                   div.row
                     div.col-4.wrapper
                       button.btn.btn-outline-secondary#undoButton Undo
