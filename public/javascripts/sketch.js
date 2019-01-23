@@ -83,8 +83,11 @@ function draw() {
     background(backgroundImage);
     if (currentAppState == appStates.DRONE) {
         for (var i = 0; i < 9; i++){
-            if (getSectorByPoint(mouseX, mouseY) != i){
+            if (getSectorByPoint(mouseX, mouseY) != i && i != selectedSector){
                 image(sectorGaussianBlurImages[i], legendSize + (i%3)*sectorSize, legendSize + Math.trunc(i/3)*sectorSize, sectorSize, sectorSize);
+            }
+            if (selectedSector == i){
+                image(sectorSelectedImage, legendSize + (i%3)*sectorSize, legendSize + Math.trunc(i/3)*sectorSize, sectorSize, sectorSize);
             }
         }
     }
@@ -133,6 +136,10 @@ function mouseMoved() {
 function showDroneConfirm(show) {
     buttonContainer.hidden = show;
     confirmDroneContainer.hidden = !show;
+}
+
+function getSectorByIndex(x, y){
+    return getSectorByIndex(legendSize + x*cellWidth, legendSize+y*cellWidth);
 }
 
 function getSectorByPoint(x, y){
@@ -198,7 +205,19 @@ function drone() {
 function droneApply(success) {
     showDroneConfirm(false);
     buttonHandler.setAllButtonsEnabled(true);
-    //TODO: drone move calculation
+    var nextPossiblePositions = [];
+    getPossiblePositions().forEach(function (position) {
+        var newPosition = {
+            x: position.x,
+            y: position.y,
+            moveStack: position.moveStack.slice()
+        };
+        if (getSectorByIndex(position.x, position.y) == selectedSector && success) {
+            nextPossiblePositions.push(newPosition);
+        }
+    });
+    possiblePositionsStack.push(nextPossiblePositions);
+    selectedSector = null;
     currentAppState = appStates.DEFAULT;
 }
 
