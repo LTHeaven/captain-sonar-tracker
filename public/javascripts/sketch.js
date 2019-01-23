@@ -2,7 +2,8 @@ var moveStringMap = {
     0: "N",
     1: "S",
     2: "W",
-    3: "E"
+    3: "E",
+    4: "Drone"
 };
 
 var backgroundImage;
@@ -139,7 +140,7 @@ function showDroneConfirm(show) {
 }
 
 function getSectorByIndex(x, y){
-    return getSectorByIndex(legendSize + x*cellWidth, legendSize+y*cellWidth);
+    return getSectorByPoint(legendSize + x*cellWidth + 1, legendSize + y*cellWidth + 1);
 }
 
 function getSectorByPoint(x, y){
@@ -212,13 +213,15 @@ function droneApply(success) {
             y: position.y,
             moveStack: position.moveStack.slice()
         };
-        if (getSectorByIndex(position.x, position.y) == selectedSector && success) {
+        if (getSectorByIndex(position.x, position.y) == selectedSector ? success : !success) {
             nextPossiblePositions.push(newPosition);
         }
     });
     possiblePositionsStack.push(nextPossiblePositions);
     selectedSector = null;
     currentAppState = appStates.DEFAULT;
+    moveStack.push(4);
+    updateMoveList();
 }
 
 
