@@ -9,6 +9,7 @@ var backgroundImage;
 var tilePossibleImage;
 var sectorDeselectedImage;
 var sectorSelectedImage;
+var sectorGaussianBlurImages;
 
 var animationHandler = {
     arrowTimeMs: 0
@@ -18,6 +19,7 @@ var arrowAnimationDelay = 10;
 var cellAmount = 15;
 var canvas;
 var mapSize;
+var sectorSize;
 var legendSize;
 var cellWidth;
 
@@ -34,7 +36,8 @@ var hoverPosition = null;
 
 var appStates = {
     DEFAULT: 0,
-    SONAR: 1
+    SONAR: 1,
+    DRONE: 2
 };
 var currentAppState = appStates.DEFAULT;
 
@@ -45,18 +48,26 @@ function initIslands() {
     });
 }
 
-function setup() {
-    moveList = document.getElementById("moveList");
-    initButtons();
-    initIslands();
-    canvas = createCanvas(1, 1);
-    updateCanvas(true);
-    canvas.parent('p5canvas');
+function initImages() {
     backgroundImage = loadImage("images/mapAlpha.png");
     background(backgroundImage);
     tilePossibleImage = loadImage("images/tilePossible.png");
     sectorDeselectedImage = loadImage("images/sectorDeselected.png");
     sectorSelectedImage = loadImage("images/sectorSelected.png");
+    sectorGaussianBlurImages = [];
+    for (var i = 0; i<9; i++){
+        sectorGaussianBlurImages.push(loadImage("images/sectors/sectorGaussianBlur-" + i + ".png"));
+    }
+}
+
+function setup() {
+    initImages();
+    initButtons();
+    initIslands();
+    moveList = document.getElementById("moveList");
+    canvas = createCanvas(1, 1);
+    updateCanvas(true);
+    canvas.parent('p5canvas');
 }
 
 
@@ -66,6 +77,14 @@ function draw() {
         updateCanvas(false)
     }
     background(backgroundImage);
+    if (currentAppState == appStates.DRONE) {
+        for (var i = 0; i < 9; i++){
+            console.log(mouseX);
+            if (getSectorByPoint(mouseX, mouseY) != i){
+                image(sectorGaussianBlurImages[i], legendSize + (i%3)*sectorSize, legendSize + Math.trunc(i/3)*sectorSize, sectorSize, sectorSize);
+            }
+        }
+    }
     getPossiblePositions().forEach(function (position) {
             var x = legendSize + cellWidth * position.x;
             var y = legendSize + cellWidth * position.y;
@@ -82,18 +101,6 @@ function draw() {
         var count = Math.trunc((new Date().getTime()-animationHandler.arrowTimeMs)/arrowAnimationDelay + 1);
         var counter = Math.min(count, hoverPosition.moveStack.length);
         drawArrowReursive(tempPosition, counter);
-    }
-    if (currentAppState == appStates.SONAR) {
-        var sectorWidth = cellWidth*5;
-        for (var i = 0; i < 9; i++){
-            console.log(mouseX);
-            if (getSectorByPoint(mouseX, mouseY) == i){
-                image(sectorSelectedImage, legendSize + (i%3)*sectorWidth, legendSize + Math.trunc(i/3)*sectorWidth, sectorWidth, sectorWidth);
-            }else{
-                image(sectorDeselectedImage, legendSize + (i%3)*sectorWidth, legendSize + Math.trunc(i/3)*sectorWidth, sectorWidth, sectorWidth);
-            }
-
-        }
     }
 }
 
@@ -122,6 +129,7 @@ function getSectorByPoint(x, y){
 function updateCanvas(noRedraw) {
     mapSize = document.getElementById("p5canvas").clientWidth;
     legendSize = mapSize*(30/455);
+    sectorSize = mapSize*(142/455);
     cellWidth = (mapSize-legendSize)/cellAmount;
     resizeCanvas(mapSize, mapSize, noRedraw);
 }
@@ -137,7 +145,7 @@ function initButtons() {
             undoButton:     initButton("undoButton",    function(){undoLastMove()}),
             sonarButton:    initButton("sonarButton",   function(){sonar()}),
             stealthButton:  initButton("stealthButton", function(){console.log("todo")}),
-            droneButton:    initButton("droneButton",   function(){console.log("todo")})
+            droneButton:    initButton("droneButton",   function(){drone()})
         },
         setAllButtonsEnabled: function (isEnabled) {
             for (var key in this.buttons) {
@@ -160,8 +168,13 @@ function initButtons() {
 }
 
 function sonar() {
+    // buttonHandler.setAllButtonsEnabled(false);
+    // currentAppState = appStates.SONAR;
+}
+
+function drone() {
     buttonHandler.setAllButtonsEnabled(false);
-    currentAppState = appStates.SONAR;
+    currentAppState = appStates.DRONE;
 }
 
 
