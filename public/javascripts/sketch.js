@@ -8,9 +8,9 @@ var moveStringMap = {
 
 var backgroundImage;
 var tilePossibleImage;
-var sectorDeselectedImage;
+var tilePossiblePixelatedImage;
 var sectorSelectedImage;
-var sectorGaussianBlurImages;
+var sectorImages;
 
 var animationHandler = {
     arrowTimeMs: 0
@@ -56,11 +56,15 @@ function initImages() {
     backgroundImage = loadImage("images/mapAlpha.png");
     background(backgroundImage);
     tilePossibleImage = loadImage("images/tilePossible.png");
-    sectorDeselectedImage = loadImage("images/sectorDeselected.png");
-    sectorSelectedImage = loadImage("images/sectorSelected.png");
-    sectorGaussianBlurImages = [];
+    tilePossiblePixelatedImage = loadImage("images/tilePossiblePixelated.png");
+    sectorSelectedImage = loadImage("images/sectors/sectorSelected.png");
+    sectorImages = {
+        pixelated: [],
+        number: []
+    };
     for (var i = 0; i<9; i++){
-        sectorGaussianBlurImages.push(loadImage("images/sectors/sectorGaussianBlur-" + i + ".png"));
+        sectorImages.pixelated.push(loadImage("images/sectors/sectorPixelated-" + i + ".png"));
+        sectorImages.number.push(loadImage("images/sectors/sectorNumber-0.png"))
     }
 }
 
@@ -85,7 +89,7 @@ function draw() {
     if (currentAppState == appStates.DRONE) {
         for (var i = 0; i < 9; i++){
             if (getSectorByPoint(mouseX, mouseY) != i && i != selectedSector){
-                image(sectorGaussianBlurImages[i], legendSize + (i%3)*sectorSize, legendSize + Math.trunc(i/3)*sectorSize, sectorSize, sectorSize);
+                image(sectorImages.pixelated[i], legendSize + (i%3)*sectorSize, legendSize + Math.trunc(i/3)*sectorSize, sectorSize, sectorSize);
             }
             if (selectedSector == i){
                 image(sectorSelectedImage, legendSize + (i%3)*sectorSize, legendSize + Math.trunc(i/3)*sectorSize, sectorSize, sectorSize);
@@ -95,8 +99,24 @@ function draw() {
     getPossiblePositions().forEach(function (position) {
             var x = legendSize + cellWidth * position.x;
             var y = legendSize + cellWidth * position.y;
-            image(tilePossibleImage, x, y, cellWidth, cellWidth);
+            if (currentAppState == appStates.DRONE) {
+                if (getSectorByPoint(x, y) == getSectorByPoint(mouseX, mouseY) || getSectorByPoint(x, y) == selectedSector) {
+                    console.log(x, y, getSectorByPoint(x, y));
+                    image(tilePossibleImage, x, y, cellWidth, cellWidth);
+                } else{
+                    image(tilePossiblePixelatedImage, x, y, cellWidth, cellWidth);
+                }
+            } else {
+                image(tilePossibleImage, x, y, cellWidth, cellWidth);
+            }
     });
+    if (currentAppState == appStates.DRONE) {
+        for (var i = 0; i < 9; i++) {
+            if (getSectorByPoint(mouseX, mouseY) != i && i != selectedSector){
+                image(sectorImages.number[i], legendSize + (i%3)*sectorSize, legendSize + Math.trunc(i/3)*sectorSize, sectorSize, sectorSize);
+            }
+        }
+    }
     //hoverPositionRendering
     if (hoverPosition != null) {
         var tempPosition = {
@@ -144,7 +164,7 @@ function getSectorByIndex(x, y){
 }
 
 function getSectorByPoint(x, y){
-    if (x>legendSize && x < mapSize && y>legendSize && y < mapSize) {
+    if (x>=legendSize && x <= mapSize && y>=legendSize && y <= mapSize) {
         return Math.trunc((x-legendSize)/(cellWidth*5)) + Math.trunc((y-legendSize)/(cellWidth*5))*3;
     }
     return null;
