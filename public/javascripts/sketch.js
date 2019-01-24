@@ -118,7 +118,7 @@ function draw() {
         }
     }
     //hoverPositionRendering
-    if (hoverPosition != null) {
+    if (hoverPosition != null && currentAppState == appStates.DEFAULT) {
         var tempPosition = {
             x: hoverPosition.x,
             y: hoverPosition.y,
