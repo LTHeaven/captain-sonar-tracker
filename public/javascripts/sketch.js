@@ -3,8 +3,16 @@ var moveStringMap = {
     1: "S",
     2: "W",
     3: "E",
-    4: "Drone"
+    4: "Drone",
+    5: "Stealth"
 };
+
+var inverseDirection = {
+    0:1,
+    1:0,
+    2:3,
+    3:2
+}
 
 var backgroundImage;
 var tilePossibleImage;
@@ -64,7 +72,7 @@ function initImages() {
     };
     for (var i = 0; i<9; i++){
         sectorImages.pixelated.push(loadImage("images/sectors/sectorPixelated-" + i + ".png"));
-        sectorImages.number.push(loadImage("images/sectors/sectorNumber-0.png"))
+        sectorImages.number.push(loadImage("images/sectors/sectorNumber-" + i + ".png"));
     }
 }
 
@@ -188,7 +196,7 @@ function initButtons() {
             resetButton:    initButton("resetButton",       function(){resetPossiblePositions()}),
             undoButton:     initButton("undoButton",        function(){undoLastMove()}),
             sonarButton:    initButton("sonarButton",       function(){sonar()}),
-            stealthButton:  initButton("stealthButton",     function(){console.log("todo")}),
+            stealthButton:  initButton("stealthButton",     function(){stealth()}),
             droneButton:    initButton("droneButton",       function(){drone()})
         },
         droneSuccessButton: initButton("droneSuccessButton",function(){droneApply(true)}),
@@ -212,6 +220,73 @@ function initButtons() {
         return button;
     }
 }
+
+function stealth() {
+    var nextPossiblePositions = [];
+    getPossiblePositions().forEach(function (position) {
+        for (var direction = 0; direction < 4; direction++) {
+            for (var stepAmount = 1; stepAmount <= 4; stepAmount++){
+                var nextPosition = {
+                    x: position.x,
+                    y: position.y,
+                    moveStack: position.moveStack.slice()
+                };
+                nextPosition = adjustByDirection(nextPosition, direction, stepAmount);
+                if(!checkLegitimateStealth(nextPosition,stepAmount, direction)){
+                    break;
+                }
+                nextPosition.moveStack.push({direction: direction, steps: stepAmount}, direction);
+                nextPossiblePositions.push(nextPosition);
+            }
+        }
+    });
+    possiblePositionsStack.push(nextPossiblePositions);
+    moveStack.push(5);
+    updateMoveList();
+}
+
+function checkLegitimateStealth(nextPosition, stepAmount, direction) {
+    let x = nextPosition.x;
+    let y = nextPosition.y;
+    var testPosition = {
+        x: x,
+        y: y,
+        moveStack: nextPosition.moveStack.slice()
+    };
+    if (y < 0 || y>=cellAmount || x < 0 || x>=cellAmount || isIsland(x, y)){
+        return false;
+    }
+    testPosition = adjustByDirection(testPosition, inverseDirection[direction], stepAmount);
+    while (testPosition.moveStack.length > 0) {
+        let move = testPosition.moveStack.pop();
+        for (var i = 0; i<move.steps; i++){
+            testPosition = adjustByDirection(testPosition, inverseDirection[move.direction], 1);
+            if(testPosition.x == x && testPosition.y == y) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+function adjustByDirection(nextPosition, direction, amount) {
+    switch(direction) {
+        case 0:
+            nextPosition.y-=amount;
+            break;
+        case 1:
+            nextPosition.y+=amount;
+            break;
+        case 2:
+            nextPosition.x-=amount;
+            break;
+        case 3:
+            nextPosition.x+=amount;
+            break;
+    }
+    return nextPosition;
+}
+
 
 function sonar() {
     // buttonHandler.setAllButtonsEnabled(false);
@@ -266,30 +341,15 @@ function isIsland(x, y) {
 }
 
 function updatePossiblePositions(move) {
-    nextPossiblePositions = [];
+    var nextPossiblePositions = [];
     getPossiblePositions().forEach(function (position) {
-        var x = position.x;
-        var y = position.y;
-        switch(move) {
-            case 0:
-                y--;
-                break;
-            case 1:
-                y++;
-                break;
-            case 2:
-                x--;
-                break;
-            case 3:
-                x++;
-                break;
-        }
-        if (!(y < 0 || y>=cellAmount || x < 0 || x>=cellAmount || isIsland(x, y))) {
-            var newPosition = {
-                x: x,
-                y: y,
-                moveStack: position.moveStack.slice()
-            };
+        var newPosition = {
+            x: position.x,
+            y: position.y,
+            moveStack: position.moveStack.slice()
+        };
+        newPosition = adjustByDirection(newPosition, move.direction, move.steps);
+        if (!(newPosition.y < 0 || newPosition.y>=cellAmount || newPosition.x < 0 || newPosition.x>=cellAmount || isIsland(newPosition.x, newPosition.y))) {
             newPosition.moveStack.push(move);
             nextPossiblePositions.push(newPosition);
         }
@@ -299,7 +359,7 @@ function updatePossiblePositions(move) {
 
 function enemyMove(direction) {
     moveStack.push(direction);
-    updatePossiblePositions(direction);
+    updatePossiblePositions({direction: direction, steps: 1});
     updateMoveList();
 }
 
@@ -355,21 +415,22 @@ function drawArrowReursive(tempPosition, counter) {
         var y = tempPosition.y;
         var arrowDivider = 8;
         noFill();
-        switch(tempPosition.moveStack.pop()) {
+        let move = tempPosition.moveStack.pop();
+        switch(move.direction) {
             case 0:
-                tempPosition.y++;
+                tempPosition.y+=move.steps;
                 triangle((cellWidth*x)+legendSize+cellWidth/2, (cellWidth*y)+legendSize+cellWidth/2, (cellWidth*x)+legendSize+cellWidth/2-cellWidth/arrowDivider, (cellWidth*(y+1))+legendSize+cellWidth/2, (cellWidth*x)+legendSize+cellWidth/2+cellWidth/arrowDivider, (cellWidth*(y+1))+legendSize+cellWidth/2)
                 break;
             case 1:
-                tempPosition.y--;
+                tempPosition.y-=move.steps;
                 triangle((cellWidth*x)+legendSize+cellWidth/2, (cellWidth*y)+legendSize+cellWidth/2, (cellWidth*x)+legendSize+cellWidth/2-cellWidth/arrowDivider, (cellWidth*(y-1))+legendSize+cellWidth/2, (cellWidth*x)+legendSize+cellWidth/2+cellWidth/arrowDivider, (cellWidth*(y-1))+legendSize+cellWidth/2)
                 break;
             case 2:
-                tempPosition.x++;
+                tempPosition.x+=move.steps;
                 triangle((cellWidth*x)+legendSize+cellWidth/2, (cellWidth*y)+legendSize+cellWidth/2, (cellWidth*(x+1))+legendSize+cellWidth/2, (cellWidth*y)+legendSize+cellWidth/2-cellWidth/arrowDivider, (cellWidth*(x+1))+legendSize+cellWidth/2, (cellWidth*y)+legendSize+cellWidth/2+cellWidth/arrowDivider);
                 break;
             case 3:
-                tempPosition.x--;
+                tempPosition.x-=move.steps;
                 triangle((cellWidth*x)+legendSize+cellWidth/2, (cellWidth*y)+legendSize+cellWidth/2, (cellWidth*(x-1))+legendSize+cellWidth/2, (cellWidth*y)+legendSize+cellWidth/2-cellWidth/arrowDivider, (cellWidth*(x-1))+legendSize+cellWidth/2, (cellWidth*y)+legendSize+cellWidth/2+cellWidth/arrowDivider);
                 break;
         }
